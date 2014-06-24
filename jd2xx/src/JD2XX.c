@@ -993,13 +993,11 @@ Java_jd2xx_JD2XX_eeReadEcc(JNIEnv *env, jobject obj, jint opt) {
 	jlong hnd = get_handle(env, obj);
 	WORD v;
 
-#ifdef WIN32
-	if (!FT_SUCCESS(st = FT_EE_ReadEcc((FT_HANDLE)hnd, (UCHAR)opt, &v)))
-		io_exception_status(env, st);
-#else
-	// Not available outside of Win32.  See FTDI D2XX docs.
+	/*
+	 * FIXME: not available on any platform anymore:
+	 * the JD2XX wrapper is outdated.
+	 */
 	io_exception_status(env, FT_NOT_SUPPORTED);
-#endif
 
 	return (jint)v;
 }

@@ -13,7 +13,6 @@ PLATFORM=$(shell uname -ms)
 # Configuration:
 # may be overwritten by environment/commandline variables
 
-CC ?= gcc
 OBJDUMP ?= objdump
 
 JFLAGS ?= -O
@@ -26,7 +25,8 @@ ifeq ($(PLATFORM),Darwin x86_64)
 	FTDI = ../ftdi
 	OS = osx
 	ARCH = static64
-	LDFLAGS += -wl -framework CoreFoundation -framework IOKit -lobjc
+	LDFLAGS += -wl -framework CoreFoundation -framework IOKit -lobjc \
+	           -L$(FTDI)/$(OS)/build/$(ARCH)/ -lftd2xx
 	SHARED_LIB = libjd2xx.jnilib
 else ifeq ($(PLATFORM),Linux i686)
 	JDK ?= /usr/lib/jvm/java-7-oracle/
@@ -35,7 +35,7 @@ else ifeq ($(PLATFORM),Linux i686)
 	OS = linux_x86
 	ARCH = i386
 	OBJDUMP = objdump
-	LDFLAGS += -lrt
+	LDFLAGS += -lrt -L$(FTDI)/$(OS)/build/$(ARCH)/ -lftd2xx
 	SHARED_LIB = libjd2xx.so
 else ifeq ($(PLATFORM),Linux x86_64)
 	JDK ?= /usr/lib/jvm/java-7-oracle/
@@ -44,15 +44,24 @@ else ifeq ($(PLATFORM),Linux x86_64)
 	OS = linux_x86
 	ARCH = x86_64
 	CFLAGS += -fPIC
-	LDFLAGS += -lrt
+	LDFLAGS += -lrt -L$(FTDI)/$(OS)/build/$(ARCH)/ -lftd2xx
 	SHARED_LIB = libjd2xx.so
 else ifneq ($(findstring MINGW,$(PLATFORM)),)
+	#
+	# NOTE: We link against the dynamic version of ftd2xx on Windows since its static
+	# version is compiled with MSVC.
+	# This is OK since the FTDI driver ships with the DLL.
+	# Also, generating a separate MinGW import library is unnecessary!
+	#
 	ifeq ($(word 2,$(PLATFORM)),i686)
 		JDK ?= c:/JDK
 		JDK_HEADERS = $(JDK)/include/win32
 		FTDI = ../ftdi
 		OS = win32
 		ARCH = i386
+		# NOTE: import library is unusable with MinGW
+		LDFLAGS += -Wl,--kill-at,--add-stdcall-alias \
+		           $(FTDI)/$(OS)/$(ARCH)/ftd2xx.dll
 		SHARED_LIB = jd2xx.dll
 	else ifeq ($(word 2,$(PLATFORM)),x86_64)
 		JDK ?= c:/JDK
@@ -60,21 +69,14 @@ else ifneq ($(findstring MINGW,$(PLATFORM)),)
 		FTDI = ../ftdi
 		OS = win32
 		ARCH = amd64
+		LDFLAGS += -L$(FTDI)/$(OS)/$(ARCH)/ -lftd2xx
 		SHARED_LIB = jd2xx.dll
 	endif
 endif
 
 CPPFLAGS += -I$(JDK)/include -I$(JDK_HEADERS) -I$(FTDI) -I$(FTDI)/$(OS) -I./src \
 	    -D_JNI_IMPLEMENTATION_
-
-#
-# NOTE: We link against the dynamic version of ftd2xx on Windows since its static
-# version is compiled with MSVC.
-# This is OK since the FTDI driver ships with the DLL.
-# Also, generating a separate MinGW import library is unnecessary!
-#
-LDFLAGS += -shared \
-	   -L$(FTDI)/$(OS)/build/$(ARCH)/ -L$(FTDI)/$(OS)/$(ARCH)/ -lftd2xx
+LDFLAGS += -shared
 
 JAVAH = $(JDK)/bin/javah -jni
 JAVAC = $(JDK)/bin/javac
