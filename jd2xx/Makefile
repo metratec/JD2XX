@@ -19,6 +19,11 @@ JFLAGS ?= -O
 CFLAGS ?= -O2 -g
 LDFLAGS ?=
 
+# Disable warnings for pointer to int casts and vice versa
+# this is because of casting of pointers to jlong on i686.
+# Since jlong is always 8 bytes, these warnings are harmless.
+CFLAGS += -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast
+
 ifeq ($(PLATFORM),Darwin x86_64)
 	JDK ?= /Library/Java/JavaVirtualMachines/jdk1.7.0_21.jdk/Contents/Home/
 	JDK_HEADERS = $(JDK)/include/darwin
@@ -54,24 +59,17 @@ else ifneq ($(findstring MINGW,$(PLATFORM)),)
 	# Also, generating a separate MinGW import library is unnecessary!
 	#
 	ifeq ($(word 2,$(PLATFORM)),i686)
-		JDK ?= c:/JDK
-		JDK_HEADERS = $(JDK)/include/win32
-		FTDI = ../ftdi
-		OS = win32
 		ARCH = i386
-		# NOTE: import library is unusable with MinGW
-		LDFLAGS += -Wl,--kill-at,--add-stdcall-alias \
-		           $(FTDI)/$(OS)/$(ARCH)/ftd2xx.dll
-		SHARED_LIB = jd2xx.dll
+		LDFLAGS += -Wl,--kill-at,--add-stdcall-alias
 	else ifeq ($(word 2,$(PLATFORM)),x86_64)
-		JDK ?= c:/JDK
-		JDK_HEADERS = $(JDK)/include/win32
-		FTDI = ../ftdi
-		OS = win32
 		ARCH = amd64
-		LDFLAGS += -L$(FTDI)/$(OS)/$(ARCH)/ -lftd2xx
-		SHARED_LIB = jd2xx.dll
 	endif
+	JDK ?= c:/JDK
+	JDK_HEADERS = $(JDK)/include/win32
+	FTDI = ../ftdi
+	OS = win32
+	LDFLAGS += -L$(FTDI)/$(OS)/$(ARCH)/ -lftd2xx
+	SHARED_LIB = jd2xx.dll
 endif
 
 CPPFLAGS += -I$(JDK)/include -I$(JDK_HEADERS) -I$(FTDI) -I$(FTDI)/$(OS) -I./src \

@@ -35,8 +35,14 @@
 	#include <windows.h>
 #endif
 
-#undef WINAPI
-#define WINAPI
+/*
+ * NOTE: This was uncommented in the original JNI verion.
+ * This however declared the D2XX functions with the default
+ * calling convention of the compiler, which is cdecl on MinGW
+ */
+//#undef WINAPI
+//#define WINAPI
+
 #include "ftd2xx.h"
 
 #ifndef INVALID_HANDLE_VALUE
