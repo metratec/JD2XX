@@ -54,6 +54,10 @@ public class JD2XXInputStream extends InputStream {
 		jd2xx = new JD2XX(n, f);
 	}
 
+	public int available() throws IOException {
+		return jd2xx.getQueueStatus();
+	}
+
 	public void close() throws IOException {
 		// jd2xx.close();
 		jd2xx = null;
@@ -64,6 +68,26 @@ public class JD2XXInputStream extends InputStream {
 	}
 
 	public int read(byte[] b) throws IOException {
-		return jd2xx.read(b);
+		return read(b, 0, b.length);
+	}
+
+	public int read(byte[] b, int off, int len) throws IOException {
+		if (len == 0)
+			return 0;
+
+		/*
+		 * jd2xx.read() will block until the requested amount of
+		 * bytes have been read or there is a timeout.
+		 * To allow buffering of the input stream we must ensure
+		 * that we don't run into a timeout.
+		 */
+		int available = jd2xx.getQueueStatus();
+
+		if (available == 0)
+			len = 1;
+		else if (available < len)
+			len = available;
+
+		return jd2xx.read(b, off, len);
 	}
 }

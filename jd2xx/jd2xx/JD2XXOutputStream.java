@@ -68,4 +68,8 @@ public class JD2XXOutputStream extends OutputStream {
 	public void write(byte[] b) throws IOException {
 		jd2xx.write(b);
 	}
+
+	public void write(byte[] b, int off, int len) throws IOException {
+		jd2xx.write(b, off, len);
+	}
 }
