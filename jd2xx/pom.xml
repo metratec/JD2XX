@@ -24,7 +24,7 @@
 
 	<groupId>com.usb</groupId>
 	<artifactId>jd2xx</artifactId>
-	<version>2.0.8.17-5</version>
+	<version>2.0.8.17-6</version>
 	<packaging>jar</packaging>
 
 	<name>Java wrapper for D2XX/libftd2xx</name>

@@ -443,6 +443,9 @@ public class JD2XX implements Runnable {
 	/** Get library version */
 	public native int getLibraryVersion();
 
+	/** Register VID/PID combination */
+	public native void setVIDPID(int vid, int pid) throws IOException;
+
 	/** Builds a device information list and returns the number of D2XX devices
 	connected to the system. The list contains information about both unopen and
 	open devices.

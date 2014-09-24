@@ -218,7 +218,6 @@ JNI_OnUnLoad(JavaVM *jvm, void *reserved) {
 //	fflush(stderr);
 }
 
-
 JNIEXPORT jint JNICALL
 Java_jd2xx_JD2XX_getLibraryVersion(JNIEnv *env, jobject obj) {
 	FT_STATUS st;
@@ -228,6 +227,19 @@ Java_jd2xx_JD2XX_getLibraryVersion(JNIEnv *env, jobject obj) {
 		io_exception_status(env, st);
 
 	return (jint)ver;
+}
+
+JNIEXPORT void JNICALL
+Java_jd2xx_JD2XX_setVIDPID(JNIEnv *env, jobject obj, jint vid, jint pid) {
+#ifdef WIN32
+	// Not available and not required on Win32. See FTDI D2XX docs.
+	io_exception_status(env, FT_NOT_SUPPORTED);
+#else
+	FT_STATUS st;
+
+	if (!FT_SUCCESS(st = FT_SetVIDPID((DWORD)vid, (DWORD)pid)))
+		io_exception_status(env, st);
+#endif
 }
 
 JNIEXPORT void JNICALL
