@@ -28,6 +28,8 @@
 
 // #define DEBUG
 
+#include <string.h>
+
 #include <jni.h>
 #include "jd2xx_JD2XX.h"
 
@@ -1032,9 +1034,8 @@ Java_jd2xx_JD2XX_getQueueStatusEx(JNIEnv *env, jobject obj) {
 	return (jint)r;
 }
 
-
-JNIEXPORT void JNICALL
-Java_jd2xx_JD2XX_eeProgram(JNIEnv *env, jobject obj, jobject pdo) {
+static inline void
+program_eeprom_default(JNIEnv *env, jobject obj, jobject pdo) {
 	FT_STATUS st;
 	FT_PROGRAM_DATA fpd;
 	jlong hnd = get_handle(env, obj);
@@ -1464,8 +1465,207 @@ end:
 	(*env)->DeleteLocalRef(env, pdcls);
 }
 
-JNIEXPORT jobject JNICALL
-Java_jd2xx_JD2XX_eeRead(JNIEnv *env, jobject obj) {
+static inline void
+program_eeprom_ftx(JNIEnv *env, jobject obj, jobject pdo) {
+	FT_STATUS st;
+	FT_EEPROM_X_SERIES fpd;
+	jlong hnd = get_handle(env, obj);
+
+	jclass pdcls = (*env)->GetObjectClass(env, pdo);
+	jfieldID fid;
+
+	jstring mstr, istr, dstr, sstr;
+	char *mstr_c = NULL, *istr_c = NULL, *dstr_c = NULL, *sstr_c = NULL;
+
+	memset(&fpd, 0, sizeof(fpd));
+	fpd.common.deviceType = FT_DEVICE_X_SERIES;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "vendorID", "I"))==0) goto end;
+	fpd.common.VendorId = (WORD)(*env)->GetIntField(env, pdo, fid);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "productID", "I"))==0) goto end;
+	fpd.common.ProductId = (WORD)(*env)->GetIntField(env, pdo, fid);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "serNumEnable", "Z"))==0) goto end;
+	fpd.common.SerNumEnable = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "maxPower", "I"))==0) goto end;
+	fpd.common.MaxPower = (WORD)(*env)->GetIntField(env, pdo, fid);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "selfPowered", "Z"))==0) goto end;
+	fpd.common.SelfPowered = (WORD)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "remoteWakeup", "Z"))==0) goto end;
+	fpd.common.RemoteWakeup = (WORD)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "pullDownEnable", "Z"))==0) goto end;
+	fpd.common.PullDownEnable = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "acSlowSlew", "Z"))==0) goto end;
+	fpd.ACSlowSlew = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "acSchmittInput", "Z"))==0) goto end;
+	fpd.ACSchmittInput = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "acDriveCurrent", "I"))==0) goto end;
+	fpd.ACDriveCurrent = (UCHAR)(*env)->GetIntField(env, pdo, fid);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "adSlowSlew", "Z"))==0) goto end;
+	fpd.ADSlowSlew = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "adSchmittInput", "Z"))==0) goto end;
+	fpd.ADSchmittInput = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "adDriveCurrent", "I"))==0) goto end;
+	fpd.ADDriveCurrent = (UCHAR)(*env)->GetIntField(env, pdo, fid);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus0", "I"))==0) goto end;
+	fpd.Cbus0 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus1", "I"))==0) goto end;
+	fpd.Cbus1 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus2", "I"))==0) goto end;
+	fpd.Cbus2 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus3", "I"))==0) goto end;
+	fpd.Cbus3 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus4", "I"))==0) goto end;
+	fpd.Cbus4 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus5", "I"))==0) goto end;
+	fpd.Cbus5 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus6", "I"))==0) goto end;
+	fpd.Cbus6 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertTXD", "Z"))==0) goto end;
+	fpd.InvertTXD = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertRXD", "Z"))==0) goto end;
+	fpd.InvertRXD = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertRTS", "Z"))==0) goto end;
+	fpd.InvertRTS = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertCTS", "Z"))==0) goto end;
+	fpd.InvertCTS = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertDTR", "Z"))==0) goto end;
+	fpd.InvertDTR = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertDSR", "Z"))==0) goto end;
+	fpd.InvertDSR = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertDCD", "Z"))==0) goto end;
+	fpd.InvertDCD = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertRI", "Z"))==0) goto end;
+	fpd.InvertRI = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "bcdEnable", "Z"))==0) goto end;
+	fpd.BCDEnable = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "bcdForceCbusPWREN", "Z"))==0) goto end;
+	fpd.BCDForceCbusPWREN = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "bcdDisableSleep", "Z"))==0) goto end;
+	fpd.BCDDisableSleep = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "i2cSlaveAddress", "I"))==0) goto end;
+	fpd.I2CSlaveAddress = (WORD)(*env)->GetIntField(env, pdo, fid);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "i2cDeviceId", "J"))==0) goto end;
+	fpd.I2CDeviceId = (DWORD)(*env)->GetLongField(env, pdo, fid);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "i2cDisableSchmitt", "Z"))==0) goto end;
+	fpd.I2CDisableSchmitt = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "ft1248Cpol", "Z"))==0) goto end;
+	fpd.FT1248Cpol = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "ft1248Lsb", "Z"))==0) goto end;
+	fpd.FT1248Lsb = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "ft1248FlowControl", "Z"))==0) goto end;
+	fpd.FT1248FlowControl = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "rs485EchoSuppress", "Z"))==0) goto end;
+	fpd.RS485EchoSuppress = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "powerSaveEnable", "Z"))==0) goto end;
+	fpd.PowerSaveEnable = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "rIsD2XX", "Z"))==0) goto end;
+	fpd.DriverType = (UCHAR)(*env)->GetBooleanField(env, pdo, fid)
+				? FT_DRIVER_TYPE_D2XX : FT_DRIVER_TYPE_VCP;
+
+	/*
+	 * These fields are passed directly to FT_EEPROM_Program()
+	 */
+	if ((fid = (*env)->GetFieldID(env, pdcls, "manufacturer", "Ljava/lang/String;"))==0) goto end;
+	mstr = (*env)->GetObjectField(env, pdo, fid);
+	mstr_c = (*env)->GetStringUTFChars(env, mstr, 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "manufacturerID", "Ljava/lang/String;"))==0) goto end;
+	istr = (*env)->GetObjectField(env, pdo, fid);
+	istr_c = (*env)->GetStringUTFChars(env, istr, 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "description", "Ljava/lang/String;"))==0) goto end;
+	dstr = (*env)->GetObjectField(env, pdo, fid);
+	dstr_c = (*env)->GetStringUTFChars(env, dstr, 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "serialNumber", "Ljava/lang/String;"))==0) goto end;
+	sstr = (*env)->GetObjectField(env, pdo, fid);
+	sstr_c = (*env)->GetStringUTFChars(env, sstr, 0);
+
+	if (!FT_SUCCESS(st = FT_EEPROM_Program((FT_HANDLE)hnd, &fpd, sizeof(fpd),
+	                                       mstr_c, istr_c, dstr_c, sstr_c)))
+		io_exception_status(env, st);
+
+
+end:
+	if (mstr_c)
+		(*env)->ReleaseStringUTFChars(env, mstr, mstr_c);
+	if (istr_c)
+		(*env)->ReleaseStringUTFChars(env, istr, istr_c);
+	if (dstr_c)
+		(*env)->ReleaseStringUTFChars(env, dstr, dstr_c);
+	if (sstr_c)
+		(*env)->ReleaseStringUTFChars(env, sstr, sstr_c);
+
+	(*env)->DeleteLocalRef(env, pdcls);
+}
+
+JNIEXPORT void JNICALL
+Java_jd2xx_JD2XX_eeProgram(JNIEnv *env, jobject obj, jobject pdo) {
+	FT_HANDLE hnd = (FT_HANDLE)get_handle(env, obj);
+	FT_STATUS st;
+
+	FT_DEVICE device;
+	DWORD deviceId; /* unused */
+	char serialNumber[16]; /* unused */
+	char description[64]; /* unused */
+
+	/*
+	 * FT-X chips have to use FT_EEPROM_Program() instead of
+	 * FT_EE_Program()
+	 */
+	if (!FT_SUCCESS(st = FT_GetDeviceInfo(hnd, &device, &deviceId,
+	                                      serialNumber, description, NULL))) {
+		io_exception_status(env, st);
+		return;
+	}
+
+	if (device == FT_DEVICE_X_SERIES)
+		program_eeprom_ftx(env, obj, pdo);
+	else
+		program_eeprom_default(env, obj, pdo);
+}
+
+static inline jobject
+read_eeprom_default(JNIEnv *env, jobject obj) {
 	FT_STATUS st;
 	FT_PROGRAM_DATA fpd;
 	jobject result;
@@ -1903,6 +2103,211 @@ panic:
 	(*env)->DeleteLocalRef(env, result);
 	(*env)->DeleteLocalRef(env, pdcls);
 	return NULL;
+}
+
+static inline jobject
+read_eeprom_ftx(JNIEnv *env, jobject obj) {
+	FT_STATUS st;
+	FT_EEPROM_X_SERIES fpd;
+	jobject result;
+	jlong hnd = get_handle(env, obj);
+
+	jclass pdcls;
+	jfieldID fid;
+	jstring str;
+
+	char manufacturer[DESCRIPTION_SIZE];
+	char manufacturerID[DESCRIPTION_SIZE];
+	char description[DESCRIPTION_SIZE];
+	char serialNumber[DESCRIPTION_SIZE];
+
+	fpd.common.deviceType = FT_DEVICE_X_SERIES;
+
+	if (!FT_SUCCESS(st = FT_EEPROM_Read((FT_HANDLE)hnd, &fpd, sizeof(fpd),
+	                                    manufacturer, manufacturerID, description, serialNumber))) {
+		io_exception_status(env, st);
+		return NULL;
+	}
+
+	pdcls = (*env)->FindClass(env, "Ljd2xx/JD2XX$ProgramData;");
+	if (pdcls == 0) return NULL;
+
+	result = (*env)->AllocObject(env, pdcls);
+	if (result == 0) goto panic;
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "vendorID", "I"))==0) goto panic;
+	(*env)->SetIntField(env, result, fid, fpd.common.VendorId);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "productID", "I"))==0) goto panic;
+	(*env)->SetIntField(env, result, fid, fpd.common.ProductId);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "serNumEnable", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.common.SerNumEnable ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "maxPower", "I"))==0) goto panic;
+	(*env)->SetIntField(env, result, fid, fpd.common.MaxPower);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "selfPowered", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.common.SelfPowered ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "remoteWakeup", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.common.RemoteWakeup ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "pullDownEnable", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.common.PullDownEnable ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "acSlowSlew", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.ACSlowSlew ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "acSchmittInput", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.ACSchmittInput ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "acDriveCurrent", "I"))==0) goto panic;
+	(*env)->SetIntField(env, result, fid, fpd.ACDriveCurrent);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "adSlowSlew", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.ADSlowSlew ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "adSchmittInput", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.ADSchmittInput ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "adDriveCurrent", "I"))==0) goto panic;
+	(*env)->SetIntField(env, result, fid, fpd.ADDriveCurrent);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus0", "I"))==0) goto panic;
+	(*env)->SetIntField(env, result, fid, fpd.Cbus0 ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus1", "I"))==0) goto panic;
+	(*env)->SetIntField(env, result, fid, fpd.Cbus1 ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus2", "I"))==0) goto panic;
+	(*env)->SetIntField(env, result, fid, fpd.Cbus2 ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus3", "I"))==0) goto panic;
+	(*env)->SetIntField(env, result, fid, fpd.Cbus3 ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus4", "I"))==0) goto panic;
+	(*env)->SetIntField(env, result, fid, fpd.Cbus4 ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus5", "I"))==0) goto panic;
+	(*env)->SetIntField(env, result, fid, fpd.Cbus5 ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus6", "I"))==0) goto panic;
+	(*env)->SetIntField(env, result, fid, fpd.Cbus6 ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertTXD", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.InvertTXD ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertRXD", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.InvertRXD ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertRTS", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.InvertRTS ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertCTS", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.InvertCTS ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertDTR", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.InvertDTR ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertDSR", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.InvertDSR ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertDCD", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.InvertDCD ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "invertRI", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.InvertRI ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "bcdEnable", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.BCDEnable ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "bcdForceCbusPWREN", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.BCDForceCbusPWREN ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "bcdDisableSleep", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.BCDDisableSleep ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "i2cSlaveAddress", "I"))==0) goto panic;
+	(*env)->SetIntField(env, result, fid, fpd.I2CSlaveAddress);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "i2cDeviceId", "J"))==0) goto panic;
+	(*env)->SetLongField(env, result, fid, fpd.I2CDeviceId);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "i2cDisableSchmitt", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.I2CDisableSchmitt ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "ft1248Cpol", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.FT1248Cpol ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "ft1248Lsb", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.FT1248Lsb ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "ft1248FlowControl", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.FT1248FlowControl ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "rs485EchoSuppress", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.RS485EchoSuppress ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "powerSaveEnable", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid, fpd.PowerSaveEnable ? 1 : 0);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "rIsD2XX", "Z"))==0) goto panic;
+	(*env)->SetBooleanField(env, result, fid,
+	                        fpd.DriverType ? FT_DRIVER_TYPE_D2XX : FT_DRIVER_TYPE_VCP);
+
+	/*
+	 * These fields are received directly from FT_EEPROM_Read()
+	 */
+	if ((fid = (*env)->GetFieldID(env, pdcls, "manufacturer", "Ljava/lang/String;"))==0) goto panic;
+	if ((str = (*env)->NewStringUTF(env, manufacturer))==0) goto panic;
+	(*env)->SetObjectField(env, result, fid, str);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "manufacturerID", "Ljava/lang/String;"))==0) goto panic;
+	if ((str = (*env)->NewStringUTF(env, manufacturerID))==0) goto panic;
+	(*env)->SetObjectField(env, result, fid, str);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "description", "Ljava/lang/String;"))==0) goto panic;
+	if ((str = (*env)->NewStringUTF(env, description))==0) goto panic;
+	(*env)->SetObjectField(env, result, fid, str);
+
+	if ((fid = (*env)->GetFieldID(env, pdcls, "serialNumber", "Ljava/lang/String;"))==0) goto panic;
+	if ((str = (*env)->NewStringUTF(env, serialNumber))==0) goto panic;
+	(*env)->SetObjectField(env, result, fid, str);
+
+	(*env)->DeleteLocalRef(env, pdcls);
+	return result;
+
+panic:
+	(*env)->DeleteLocalRef(env, result);
+	(*env)->DeleteLocalRef(env, pdcls);
+	return NULL;
+}
+
+JNIEXPORT jobject JNICALL
+Java_jd2xx_JD2XX_eeRead(JNIEnv *env, jobject obj) {
+	FT_HANDLE hnd = (FT_HANDLE)get_handle(env, obj);
+	FT_STATUS st;
+
+	FT_DEVICE device;
+	DWORD deviceId; /* unused */
+	char serialNumber[16]; /* unused */
+	char description[64]; /* unused */
+
+	/*
+	 * FT-X chips have to use FT_EEPROM_Read() instead of
+	 * FT_EE_Read()
+	 */
+	if (!FT_SUCCESS(st = FT_GetDeviceInfo(hnd, &device, &deviceId,
+	                                      serialNumber, description, NULL))) {
+		io_exception_status(env, st);
+		return NULL;
+	}
+
+	if (device == FT_DEVICE_X_SERIES)
+		return read_eeprom_ftx(env, obj);
+	else
+		return read_eeprom_default(env, obj);
 }
 
 JNIEXPORT jint JNICALL

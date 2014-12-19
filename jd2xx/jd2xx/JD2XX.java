@@ -194,7 +194,11 @@ public class JD2XX implements Runnable {
 		FT232H_CBUS_CLK15 = 0x0B,	//	15MHz clock
 		FT232H_CBUS_CLK7_5 = 0x0C;	//	7.5MHz clock
 
-	/** EEPROM programming interface */
+	/**
+	 * EEPROM programming interface.
+	 * Corresponds to the C API's FT_PROGRAM_DATA and
+	 * FT_EEPROM_X_SERIES structures.
+	 */
 	public static class ProgramData {
 		public int signature1; // 0x0000_0000
 		public int signature2; // 0xffff_ffff
@@ -343,6 +347,25 @@ public class JD2XX implements Runnable {
 		public boolean isVCPH;				// non-zero if interface is to use VCP drivers
 		public boolean powerSaveEnableH;		// non-zero if using ACBUS7 to save power for self-powered designs
 
+		/* additional fields for FT-X chips */
+		public boolean acSlowSlew;			// non-zero if AC pins have slow slew
+		public boolean acSchmittInput;		// non-zero if AC pins are Schmitt input
+		public int acDriveCurrent;		// valid values are 4mA, 8mA, 12mA, 16mA
+		public boolean adSlowSlew;			// non-zero if AD pins have slow slew
+		public boolean adSchmittInput;		// non-zero if AD pins are Schmitt input
+		public int adDriveCurrent;		// valid values are 4mA, 8mA, 12mA, 16mA
+		public int cbus5;			// Cbus Mux control
+		public int cbus6;			// Cbus Mux control
+		public boolean bcdEnable;			// Enable Battery Charger Detection
+		public boolean bcdForceCbusPWREN;	// asserts the power enable signal on CBUS when charging port detected
+		public boolean bcdDisableSleep;		// forces the device never to go into sleep mode
+		public int i2cSlaveAddress;		// I2C slave device address
+		public long i2cDeviceId;			// I2C device ID
+		public boolean i2cDisableSchmitt;	// Disable I2C Schmitt trigger
+		public boolean ft1248Cpol;			// FT1248 clock polarity - clock idle high (1) or clock idle low (0)
+		public boolean ft1248Lsb;			// FT1248 data is LSB (1) or MSB (0)
+		public boolean ft1248FlowControl;	// FT1248 flow control enable
+		public boolean rs485EchoSuppress;
 
 		public ProgramData() {
 			signature1 = (int)0x00000000;
@@ -408,7 +431,25 @@ public class JD2XX implements Runnable {
 			b.append(", cbus2: 0x" + Integer.toHexString(cbus2));
 			b.append(", cbus3: 0x" + Integer.toHexString(cbus3));
 			b.append(", cbus4: 0x" + Integer.toHexString(cbus4));
+			b.append(", cbus5: 0x" + Integer.toHexString(cbus5));
+			b.append(", cbus6: 0x" + Integer.toHexString(cbus6));
 			b.append(", rIsD2XX: " + rIsD2XX);
+			b.append(", acSlowSlew: " + acSlowSlew);
+			b.append(", acSchmittInput: " + acSchmittInput);
+			b.append(", acDriveCurrent: " + acDriveCurrent);
+			b.append(", adSlowSlew: " + adSlowSlew);
+			b.append(", adSchmittInput: " + adSchmittInput);
+			b.append(", adDriveCurrent: " + adDriveCurrent);
+			b.append(", bcdEnable: " + bcdEnable);
+			b.append(", bcdForceCbusPWREN: " + bcdForceCbusPWREN);
+			b.append(", bcdDisableSleep: " + bcdDisableSleep);
+			b.append(", i2cSlaveAddress: " + Integer.toHexString(i2cSlaveAddress));
+			b.append(", i2cDeviceId: " + Long.toHexString(i2cDeviceId));
+			b.append(", i2cDisableSchmitt: " + i2cDisableSchmitt);
+			b.append(", ft1248Cpol: " + ft1248Cpol);
+			b.append(", ft1248Lsb: " + ft1248Lsb);
+			b.append(", ft1248FlowControl: " + ft1248FlowControl);
+			b.append(", rs485EchoSuppress: " + rs485EchoSuppress);
 
 			return b.toString();
 		}
@@ -593,10 +634,11 @@ public class JD2XX implements Runnable {
 	public native void eraseEE() throws IOException;
 
 	/** Program EEPROM
+		Also works with FT-X chips.
 		@param data ProgramData object holding device information
 	*/
 	public native void eeProgram(ProgramData data) throws IOException;
-	/** Extended program EEPROM
+	/** Extended program EEPROM.
 		@param data ProgramData object holding device information
 		@param manufacturer device manufacturer string
 		@param manufacturerId device manufacturerId string
@@ -609,6 +651,7 @@ public class JD2XX implements Runnable {
 		String description, String serialNumber
 	) throws IOException;
 	/** Read device information from EEPROM
+		Also works with FT-X chips.
 		@return ProgramData object with device information
 	*/
 	public native ProgramData eeRead() throws IOException;
