@@ -781,7 +781,7 @@ public class JD2XX implements Runnable {
 			lib.append("win/");
 		else if (osName.contains("linux"))
 			lib.append("linux/");
-		else if (osName.contains("mac"))
+		else if (osName.contains("os x"))
 			lib.append("mac/");
 		else
 			throw new UnsatisfiedLinkError("Loading JD2XX JNI: Unsupported operating system ("+osName+")");
@@ -797,7 +797,7 @@ public class JD2XX implements Runnable {
 			lib.append("jd2xx.dll");
 		else if (osName.contains("linux"))
 			lib.append("libjd2xx.so");
-		else if (osName.contains("mac"))
+		else if (osName.contains("os x"))
 			lib.append("libjd2xx.jnilib");
 
 		try {

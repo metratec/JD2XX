@@ -24,13 +24,23 @@ LDFLAGS ?=
 # Since jlong is always 8 bytes, these warnings are harmless.
 CFLAGS += -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast
 
-ifeq ($(PLATFORM),Darwin x86_64)
+ifeq ($(PLATFORM),Darwin i386)
+	JDK ?= /Library/Java/JavaVirtualMachines/jdk1.7.0_21.jdk/Contents/Home/
+	JDK_HEADERS = $(JDK)/include/darwin
+	FTDI = ../ftdi
+	OS = osx
+	ARCH = static32
+	CFLAGS += -m32
+	LDFLAGS += -framework CoreFoundation -framework IOKit -lobjc \
+	           -m32 -L$(FTDI)/$(OS)/build/$(ARCH)/ -lftd2xx
+	SHARED_LIB = libjd2xx.jnilib
+else ifeq ($(PLATFORM),Darwin x86_64)
 	JDK ?= /Library/Java/JavaVirtualMachines/jdk1.7.0_21.jdk/Contents/Home/
 	JDK_HEADERS = $(JDK)/include/darwin
 	FTDI = ../ftdi
 	OS = osx
 	ARCH = static64
-	LDFLAGS += -wl -framework CoreFoundation -framework IOKit -lobjc \
+	LDFLAGS += -framework CoreFoundation -framework IOKit -lobjc \
 	           -L$(FTDI)/$(OS)/build/$(ARCH)/ -lftd2xx
 	SHARED_LIB = libjd2xx.jnilib
 else ifeq ($(PLATFORM),Linux i686)
