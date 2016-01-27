@@ -194,6 +194,31 @@ public class JD2XX implements Runnable {
 		FT232H_CBUS_CLK15 = 0x0B,	//	15MHz clock
 		FT232H_CBUS_CLK7_5 = 0x0C;	//	7.5MHz clock
 
+	/* FT X Series CBUS Options EEPROM values */
+	public static final int
+		FT_X_SERIES_CBUS_TRISTATE = 0x00,	//	Tristate
+		FT_X_SERIES_CBUS_TXLED = 0x01,	//	Tx LED
+		FT_X_SERIES_CBUS_RXLED = 0x02,	//	Rx LED
+		FT_X_SERIES_CBUS_TXRXLED = 0x03,	//	Tx and Rx LED
+		FT_X_SERIES_CBUS_PWREN = 0x04,	//	Power Enable
+		FT_X_SERIES_CBUS_SLEEP = 0x05,	//	Sleep
+		FT_X_SERIES_CBUS_DRIVE_0 = 0x06,	//	Drive pin to logic 0
+		FT_X_SERIES_CBUS_DRIVE_1 = 0x07,	//	Drive pin to logic 1
+		FT_X_SERIES_CBUS_IOMODE = 0x08,	//	IO Mode for CBUS bit-bang
+		FT_X_SERIES_CBUS_TXDEN = 0x09,	//	Tx Data Enable
+		FT_X_SERIES_CBUS_CLK21 = 0x0A,	//	24MHz clock
+		FT_X_SERIES_CBUS_CLK12 = 0x0B,	//	12MHz clock
+		FT_X_SERIES_CBUS_CLK6 = 0x0C,	//	6MHz clock
+		FT_X_SERIES_CBUS_BCD_CHARGER = 0x0D,	//	Battery charger detected
+		FT_X_SERIES_CBUS_BCD_CHARGER_N = 0x0E,	//	Battery charger detected inverted
+		FT_X_SERIES_CBUS_I2C_TXE = 0x0F,	//	I2C Tx empty
+		FT_X_SERIES_CBUS_I2C_RXF = 0x10,	//	I2C Rx full
+		FT_X_SERIES_CBUS_VBUS_SENSE = 0x11,	//	Detect VBUS
+		FT_X_SERIES_CBUS_BITBANG_WR = 0x12,	//	Bit-bang write strobe
+		FT_X_SERIES_CBUS_BITBANG_RD = 0x13,	//	Bit-bang read strobe
+		FT_X_SERIES_CBUS_TIMESTAMP = 0x14,	//	Toggle output when a USB SOF token is received
+		FT_X_SERIES_CBUS_KEEP_AWAKE = 0x15;	//
+
 	/**
 	 * EEPROM programming interface.
 	 * Corresponds to the C API's FT_PROGRAM_DATA and
