@@ -1214,19 +1214,19 @@ program_eeprom_default(JNIEnv *env, jobject obj, jobject pdo) {
 	fpd.InvertRI = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus0", "I"))==0) goto end;
-	fpd.Cbus0 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+	fpd.Cbus0 = (UCHAR)(*env)->GetIntField(env, pdo, fid);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus1", "I"))==0) goto end;
-	fpd.Cbus1 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+	fpd.Cbus1 = (UCHAR)(*env)->GetIntField(env, pdo, fid);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus2", "I"))==0) goto end;
-	fpd.Cbus2 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+	fpd.Cbus2 = (UCHAR)(*env)->GetIntField(env, pdo, fid);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus3", "I"))==0) goto end;
-	fpd.Cbus3 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+	fpd.Cbus3 = (UCHAR)(*env)->GetIntField(env, pdo, fid);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus4", "I"))==0) goto end;
-	fpd.Cbus4 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+	fpd.Cbus4 = (UCHAR)(*env)->GetIntField(env, pdo, fid);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "rIsD2XX", "Z"))==0) goto end;
 	fpd.RIsD2XX = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
@@ -1520,25 +1520,25 @@ program_eeprom_ftx(JNIEnv *env, jobject obj, jobject pdo) {
 	fpd.ADDriveCurrent = (UCHAR)(*env)->GetIntField(env, pdo, fid);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus0", "I"))==0) goto end;
-	fpd.Cbus0 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+	fpd.Cbus0 = (UCHAR)(*env)->GetIntField(env, pdo, fid);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus1", "I"))==0) goto end;
-	fpd.Cbus1 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+	fpd.Cbus1 = (UCHAR)(*env)->GetIntField(env, pdo, fid);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus2", "I"))==0) goto end;
-	fpd.Cbus2 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+	fpd.Cbus2 = (UCHAR)(*env)->GetIntField(env, pdo, fid);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus3", "I"))==0) goto end;
-	fpd.Cbus3 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+	fpd.Cbus3 = (UCHAR)(*env)->GetIntField(env, pdo, fid);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus4", "I"))==0) goto end;
-	fpd.Cbus4 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+	fpd.Cbus4 = (UCHAR)(*env)->GetIntField(env, pdo, fid);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus5", "I"))==0) goto end;
-	fpd.Cbus5 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+	fpd.Cbus5 = (UCHAR)(*env)->GetIntField(env, pdo, fid);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus6", "I"))==0) goto end;
-	fpd.Cbus6 = (UCHAR)(*env)->GetIntField(env, pdo, fid) ? 1 : 0;
+	fpd.Cbus6 = (UCHAR)(*env)->GetIntField(env, pdo, fid);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "invertTXD", "Z"))==0) goto end;
 	fpd.InvertTXD = (UCHAR)(*env)->GetBooleanField(env, pdo, fid) ? 1 : 0;
@@ -2175,25 +2175,25 @@ read_eeprom_ftx(JNIEnv *env, jobject obj) {
 	(*env)->SetIntField(env, result, fid, fpd.ADDriveCurrent);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus0", "I"))==0) goto panic;
-	(*env)->SetIntField(env, result, fid, fpd.Cbus0 ? 1 : 0);
+	(*env)->SetIntField(env, result, fid, fpd.Cbus0);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus1", "I"))==0) goto panic;
-	(*env)->SetIntField(env, result, fid, fpd.Cbus1 ? 1 : 0);
+	(*env)->SetIntField(env, result, fid, fpd.Cbus1);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus2", "I"))==0) goto panic;
-	(*env)->SetIntField(env, result, fid, fpd.Cbus2 ? 1 : 0);
+	(*env)->SetIntField(env, result, fid, fpd.Cbus2);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus3", "I"))==0) goto panic;
-	(*env)->SetIntField(env, result, fid, fpd.Cbus3 ? 1 : 0);
+	(*env)->SetIntField(env, result, fid, fpd.Cbus3);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus4", "I"))==0) goto panic;
-	(*env)->SetIntField(env, result, fid, fpd.Cbus4 ? 1 : 0);
+	(*env)->SetIntField(env, result, fid, fpd.Cbus4);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus5", "I"))==0) goto panic;
-	(*env)->SetIntField(env, result, fid, fpd.Cbus5 ? 1 : 0);
+	(*env)->SetIntField(env, result, fid, fpd.Cbus5);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "cbus6", "I"))==0) goto panic;
-	(*env)->SetIntField(env, result, fid, fpd.Cbus6 ? 1 : 0);
+	(*env)->SetIntField(env, result, fid, fpd.Cbus6);
 
 	if ((fid = (*env)->GetFieldID(env, pdcls, "invertTXD", "Z"))==0) goto panic;
 	(*env)->SetBooleanField(env, result, fid, fpd.InvertTXD ? 1 : 0);
