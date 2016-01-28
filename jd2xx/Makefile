@@ -70,9 +70,10 @@ else ifneq ($(findstring MINGW,$(PLATFORM)),)
 	#
 	ifeq ($(word 2,$(PLATFORM)),i686)
 		ARCH = i386
-		LDFLAGS += -Wl,--kill-at,--add-stdcall-alias
+		LDFLAGS += -Wl,--kill-at,--add-stdcall-alias -m32
 	else ifeq ($(word 2,$(PLATFORM)),x86_64)
 		ARCH = amd64
+		LDFLAGS += -Wl,--kill-at,--add-stdcall-alias -m64
 	endif
 	JDK ?= c:/JDK
 	JDK_HEADERS = $(JDK)/include/win32
@@ -82,7 +83,7 @@ else ifneq ($(findstring MINGW,$(PLATFORM)),)
 	SHARED_LIB = jd2xx.dll
 endif
 
-CPPFLAGS += -I$(JDK)/include -I$(JDK_HEADERS) -I$(FTDI) -I$(FTDI)/$(OS) -I./src \
+CPPFLAGS += -I"$(JDK)/include" -I"$(JDK_HEADERS)" -I$(FTDI) -I$(FTDI)/$(OS) -I./src \
 	    -D_JNI_IMPLEMENTATION_
 LDFLAGS += -shared
 
