@@ -1,4 +1,7 @@
-include ../Makefile.conf
+-include ../Makefile.conf
+
+# JAVA_HOME is usually set on Java boxes
+JDK ?= $(JAVA_HOME)
 
 JSRC = $(wildcard *.java)
 JOBJ = $(JSRC:%.java=%.class)
