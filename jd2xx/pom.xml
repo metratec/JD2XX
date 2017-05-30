@@ -28,5 +28,12 @@
 	<packaging>jar</packaging>
 
 	<name>Java wrapper for D2XX/libftd2xx</name>
+	<url>https://github.com/metratec/JD2XX.git</url>
+	<licenses>
+		<license>
+			<name>BSD License</name>
+			<url>https://github.com/metratec/JD2XX/blob/master/jd2xx/License.txt</url>
+		</license>
+	</licenses>
 </project>
 
